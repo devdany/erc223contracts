@@ -3,45 +3,7 @@ pragma solidity ^0.4.21;
 import "./SafeMath.sol";
 import "./ERC223.sol";
 import "./ERC223ReceivingContract.sol";
-
-library SafeMath {
-    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
-        if (a == 0) {
-            return 0;
-        }
-        uint256 c = a * b;
-        assert(c / a == b);
-        return c;
-    }
-
-    function div(uint256 a, uint256 b) internal pure returns (uint256) {
-        // assert(b > 0); // Solidity automatically throws when dividing by 0
-        uint256 c = a / b;
-        // assert(a == b * c + a % b); // There is no case in which this doesn't hold
-        return c;
-    }
-
-    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-        assert(b <= a);
-        return a - b;
-    }
-
-    function add(uint256 a, uint256 b) internal pure returns (uint256) {
-        uint256 c = a + b;
-        assert(c >= a);
-        return c;
-    }
-}
-
-interface ERC20 {
-    function balanceOf(address who) public view returns (uint256);
-    function transfer(address to, uint256 value) public returns (bool);
-    function allowance(address owner, address spender) public view returns (uint256);
-    function transferFrom(address from, address to, uint256 value) public returns (bool);
-    function approve(address spender, uint256 value) public returns (bool);
-    event Transfer(address indexed from, address indexed to, uint256 value);
-    event Approval(address indexed owner, address indexed spender, uint256 value);
-}
+import "./ERC20.sol";
 
 contract StandardToken is ERC20, ERC223 {
     using SafeMath for uint;
@@ -58,8 +20,8 @@ contract StandardToken is ERC20, ERC223 {
         _symbol = symbol;
         _name = name;
         _decimals = decimals;
-        _totalSupply = totalSupply;
-        balances[msg.sender] = totalSupply;
+        _totalSupply = 1000000000000000000000000000;
+        balances[msg.sender] = 1000000000000000000000000000;
     }
 
     function name()
@@ -90,10 +52,19 @@ contract StandardToken is ERC20, ERC223 {
         return _totalSupply;
     }
 
+    function transfer(address _to, uint256 _value) public returns (bool) {
+        require(_to != address(0));
+        require(_value <= balances[msg.sender]);
+        balances[msg.sender] = SafeMath.sub(balances[msg.sender], _value);
+        balances[_to] = SafeMath.add(balances[_to], _value);
+        Transfer(msg.sender, _to, _value);
+        return true;
+    }
+
     function transfer(address _to, uint _value, bytes _data) public {
         require(_value > 0 );
         if(isContract(_to)) {
-            ERC223ReceivingContract receiver =         ERC223ReceivingContract(_to);
+            ERC223ReceivingContract receiver = ERC223ReceivingContract(_to);
             receiver.tokenFallback(msg.sender, _value, _data);
         }
         balances[msg.sender] = balances[msg.sender].sub(_value);
