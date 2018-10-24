@@ -1,4 +1,4 @@
-pragma solidity ^0.4.10;
+pragma solidity ^0.4.21;
 
 interface ERC20 {
     function balanceOf(address who) public view returns (uint256);

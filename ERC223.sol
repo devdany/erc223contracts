@@ -1,4 +1,4 @@
-pragma solidity ^0.4.10;
+pragma solidity ^0.4.21;
 
 interface ERC223 {
     function transfer(address to, uint value, bytes data) public;
